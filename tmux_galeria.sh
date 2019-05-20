@@ -27,11 +27,8 @@ tmux send-keys "cd $PROJNAME" ENTER
 tmux new-window -n 3WAY
 
 # Main code editor
-
-# Console
-tmux split-window -h
-tmux send-keys "conda activate $CONDANAME" ENTER
-tmux send-keys "clear" ENTER
+tmux send-keys "vim ../dshelpers.py" ENTER
+tmux send-keys ":vsplit helpers.py" ENTER
 
 # Create a third window for JLAB
 tmux new-window -n JLB
