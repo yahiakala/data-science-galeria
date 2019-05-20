@@ -14,7 +14,7 @@ def visualize_model_performance(x_train, x_test, y_train, y_test,
     """Summarize and visualize (binary classifier) model performance."""
     y_train_predp = model.predict_proba(x_train)[:, 1]
     y_test_predp = model.predict_proba(x_test)[:, 1]
-    
+
     y_train_pred = (y_train_predp >= threshold).astype(int)
     y_test_pred = (y_test_predp >= threshold).astype(int)
 
@@ -29,7 +29,7 @@ def visualize_model_performance(x_train, x_test, y_train, y_test,
     fpr_test, tpr_test, _ = roc_curve(y_test, y_test_predp)
     auc_train = auc(fpr_train, tpr_train)
     auc_test = auc(fpr_test, tpr_test)
-    
+
     fig, ax = plt.subplots(2, 1, figsize=(12, 14))
     # Create a DataFrame (easier to plot).
     scores_df = pd.DataFrame(
@@ -47,7 +47,7 @@ def visualize_model_performance(x_train, x_test, y_train, y_test,
     ax[0].set_ylim([0, 1.2])
     for tick in ax[0].get_xticklabels():
         tick.set_rotation(0)
-        
+
     for p in ax[0].patches:
         ax[0].annotate(
             str(p.get_height().round(2)),
@@ -67,7 +67,7 @@ def visualize_model_performance(x_train, x_test, y_train, y_test,
     ax[1].set_ylabel('True Positive Rate [-]')
     ax[1].set_title('ROC Curve')
     ax[1].legend(loc='lower right')
- 
+
     return fig, ax
 
 
@@ -85,7 +85,7 @@ def onehot_encode(dfin, onehot_cols):
         df = pd.concat([df, encoded_df], axis=1)
     return df[onehot_features]
 
- 
+
 def encode_features(dfin):
     """Encode features in a DataFrame and return final DF."""
     df = dfin.copy()
@@ -128,7 +128,7 @@ def binary_process(input_df, binary_col):
     output_df[binary_col] = output_df[binary_col].str.lower()
     return output_df[binary_col].apply(lambda x: 1 if x == 'yes'
                                        else 0)
- 
+
 
 def ratio_segmented_1(input_df, conversion_col, seg_col):
     """Get the conversion rate on a 1D segmented dataset."""
@@ -149,7 +149,7 @@ def ratio_segmented(input_df, ratio_col, seg_cols):
     """Get the conversion rate on a segmented dataset."""
     df1 = input_df.groupby(seg_cols)[ratio_col].sum()
     df2 = input_df.groupby(seg_cols)[ratio_col].count()
-    return df
+    return df1 / df2
 
 
 def plot_ratios_and_bins(input_df, conversion_col, seg_col):
@@ -172,7 +172,7 @@ def bar_ratios_and_bins(input_df, ratio_col, seg_col):
     convs = ratio_segmented_1(input_df, ratio_col, seg_col)
     ax[0].bar(convs.index, convs.values, color='skyblue')
     ax[0].set_ylabel(ratio_col + ' Rate [-]')
-    convc = input_df.groupby(seg_col)[ratio_col].count()
+    # convc = input_df.groupby(seg_col)[ratio_col].count()
     # ax[1].bar(convc.index, convc.values, color='red')
     dummy_df = input_df.copy()
     dummy_df['dum1'] = dummy_df[ratio_col].apply(lambda x: 'Yes' if x == 1
@@ -194,7 +194,7 @@ def bar_ratios_and_bins(input_df, ratio_col, seg_col):
 def stacked_bar_ratios(input_df, conversion_col, seg_cols):
     """Plot a stacked bar with a segmented population."""
     df = ratio_segmented_2(input_df, conversion_col,
-                                seg_cols)
+                           seg_cols)
     fig, ax = plt.subplots(2, 1, figsize=(16, 15))
     df.plot(ax=ax[0], kind='bar', stacked='True')
     ax[0].set_title('KPI Rates by ' + str(seg_cols[0]) + ' and ' +
