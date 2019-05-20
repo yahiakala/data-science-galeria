@@ -1,0 +1,26 @@
+name: ds-galeria
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - graphviz=2.40.1
+  - ipykernel=5.1.0
+  - ipython=7.5.0
+  - jupyter=1.0.0
+  - jupyterlab=0.35.6
+  - matplotlib=3.0.3
+  - numpy=1.16.3
+  - pandas=0.24.2
+  - pip=19.1
+  - python=3.7.1
+  - python-dateutil=2.8.0
+  - python-graphviz=0.10.1
+  - scikit-learn=0.20.3
+  - scipy=1.2.1
+  - seaborn=0.9.0
+  - statsmodels=0.9.0
+  - pip:
+    - kaggle==1.5.3
+    - mysql-connector-python-rf==2.2.2
+    - python-dotenv==0.10.2
+prefix: /opt/miniconda3/envs/ds-galeria
