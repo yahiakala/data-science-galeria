@@ -54,10 +54,63 @@ def ei_benefits(taxable_income):
     # Total insurable earnings
     insurable_earnings = 56300 / 52 * 0.55  # noqa Assume constant
     # Then tax them both federally and provincially, but no CPP/EI deductions.
-    # Then multiply by max number of weeks depending on unemployment rate.
+    # Then multiply by max number of weeks depending on unemployment rate (lookup table)
+    return None
+
+def dash_hyphen(input_string):
+    """Function to deal with the stupid long dash."""
+    # Thanks stackoverflow
+    split_char = '-' if '-' in input_string else '–'
+    return input_string.split(split_char)[1].replace(',', '')
 
 
 def scrape_table_EI(webpage_url=ei_table_url):
     """Pull the max weeks table into a DataFrame."""
-    tables = pd.read_html(webpage_url)[0]  # noqa
+    limtable = pd.read_html(webpage_url)[0]  # noqa
     # Get upper limits for both column names and num hours names
+    colnames = [i[1] for i in limtable.columns]
+    limtable.columns = colnames
+    limtable['Number of hours of insurable employment'].replace('1,820+', '1,820-1000000', inplace=True)
+    limtable['Num Hours'] = limtable['Number of hours of insurable employment'].apply(dash_hyphen).astype(float)
+    limtable.set_index('Num Hours', inplace=True)
+    limtable.drop(columns='Number of hours of insurable employment', inplace=True)
+    coluppers = colnames[1:].copy()
+    coluppers[0] = '0–6%'
+    coluppers[-1] = '16%–100%'
+    coluppers2 = [float(i.split('–')[1].strip().replace('%', '')) / 100 for i in coluppers]
+    limtable.columns = coluppers2
+    return limtable
+
+
+def closest_number(input_value, input_array):
+    """Find the closest number in array-like data."""
+    # default round up.
+    diffs = np.array(input_array) - input_value
+    diffs = [i if i > 0 else 1000000 for i in diffs]
+    min_idx = np.argmin(diffs)
+    return input_array[min_idx]
+
+    
+def get_max_weeks(insurable_hours, unemployment_rate, lookup_table=scrape_table_EI()):
+    """
+    Get the max weeks of eligible EI.
+    
+    Parameters
+    ----------
+    insurable_hours : int
+        Number of insurable employment hours
+    unemployment_rate : float
+        Unemployment rate expressed as a decimal.
+    lookup_table : pandas.DataFrame
+        Lookup table scraped from Canada.ca.
+
+    Returns
+    -------
+    int
+        Max number of weeks you can collect EI.
+    """
+    closest_hour = closest_number(insurable_hours, lookup_table.index)
+    closest_unemployment = closest_number(unemployment_rate, lookup_table.columns)
+    return lookup_table.loc[closest_hour, closest_unemployment]
+
+
